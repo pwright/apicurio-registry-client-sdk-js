@@ -5,8 +5,8 @@ on:
     types: [on-oas-updated]
 
 jobs:
-  generate_ts:
-    name: Generate Go client
+  generate:
+    name: Generate TS client
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -22,7 +22,7 @@ jobs:
         with:
           filters: |
             generated:
-              - 'src/**'
+              - '**'
 
       - name: Create Pull Request
         if: steps.changes.outputs.generated == 'true'
