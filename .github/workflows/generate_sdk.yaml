@@ -18,7 +18,7 @@ jobs:
         run: bash <(curl -s https://raw.githubusercontent.com/Apicurio/apicurio-registry-client-sdk-go/main/hack/scripts/preprocess-schema.sh)
       - uses: craicoverflow/openapi-generator-action@v1
         with:
-          generator: typescript-fetch
+          generator: typescript-axios
           input: tmp/input-schema.json
           output: src
           additional-properties: "supportsES6=true,typescriptThreePlus=true"
