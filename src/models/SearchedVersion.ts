@@ -46,10 +46,10 @@ export interface SearchedVersion {
     description?: string;
     /**
      * 
-     * @type {Date}
+     * @type {string}
      * @memberof SearchedVersion
      */
-    createdOn: Date;
+    createdOn: string;
     /**
      * 
      * @type {string}
@@ -112,7 +112,7 @@ export function SearchedVersionFromJSONTyped(json: any, ignoreDiscriminator: boo
         
         'name': !exists(json, 'name') ? undefined : json['name'],
         'description': !exists(json, 'description') ? undefined : json['description'],
-        'createdOn': (new Date(json['createdOn'])),
+        'createdOn': json['createdOn'],
         'createdBy': json['createdBy'],
         'type': ArtifactTypeFromJSON(json['type']),
         'labels': !exists(json, 'labels') ? undefined : json['labels'],
@@ -135,7 +135,7 @@ export function SearchedVersionToJSON(value?: SearchedVersion | null): any {
         
         'name': value.name,
         'description': value.description,
-        'createdOn': (value.createdOn.toISOString()),
+        'createdOn': value.createdOn,
         'createdBy': value.createdBy,
         'type': ArtifactTypeToJSON(value.type),
         'labels': value.labels,

@@ -39,10 +39,10 @@ export interface SystemInfo {
     version?: string;
     /**
      * 
-     * @type {Date}
+     * @type {string}
      * @memberof SystemInfo
      */
-    builtOn?: Date;
+    builtOn?: string;
 }
 
 export function SystemInfoFromJSON(json: any): SystemInfo {
@@ -58,7 +58,7 @@ export function SystemInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean)
         'name': !exists(json, 'name') ? undefined : json['name'],
         'description': !exists(json, 'description') ? undefined : json['description'],
         'version': !exists(json, 'version') ? undefined : json['version'],
-        'builtOn': !exists(json, 'builtOn') ? undefined : (new Date(json['builtOn'])),
+        'builtOn': !exists(json, 'builtOn') ? undefined : json['builtOn'],
     };
 }
 
@@ -74,7 +74,7 @@ export function SystemInfoToJSON(value?: SystemInfo | null): any {
         'name': value.name,
         'description': value.description,
         'version': value.version,
-        'builtOn': value.builtOn === undefined ? undefined : (value.builtOn.toISOString()),
+        'builtOn': value.builtOn,
     };
 }
 

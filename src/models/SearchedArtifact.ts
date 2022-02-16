@@ -52,10 +52,10 @@ export interface SearchedArtifact {
     description?: string;
     /**
      * 
-     * @type {Date}
+     * @type {string}
      * @memberof SearchedArtifact
      */
-    createdOn: Date;
+    createdOn: string;
     /**
      * 
      * @type {string}
@@ -82,10 +82,10 @@ export interface SearchedArtifact {
     state: ArtifactState;
     /**
      * 
-     * @type {Date}
+     * @type {string}
      * @memberof SearchedArtifact
      */
-    modifiedOn?: Date;
+    modifiedOn?: string;
     /**
      * 
      * @type {string}
@@ -113,12 +113,12 @@ export function SearchedArtifactFromJSONTyped(json: any, ignoreDiscriminator: bo
         'id': json['id'],
         'name': !exists(json, 'name') ? undefined : json['name'],
         'description': !exists(json, 'description') ? undefined : json['description'],
-        'createdOn': (new Date(json['createdOn'])),
+        'createdOn': json['createdOn'],
         'createdBy': json['createdBy'],
         'type': ArtifactTypeFromJSON(json['type']),
         'labels': !exists(json, 'labels') ? undefined : json['labels'],
         'state': ArtifactStateFromJSON(json['state']),
-        'modifiedOn': !exists(json, 'modifiedOn') ? undefined : (new Date(json['modifiedOn'])),
+        'modifiedOn': !exists(json, 'modifiedOn') ? undefined : json['modifiedOn'],
         'modifiedBy': !exists(json, 'modifiedBy') ? undefined : json['modifiedBy'],
         'groupId': !exists(json, 'groupId') ? undefined : json['groupId'],
     };
@@ -136,12 +136,12 @@ export function SearchedArtifactToJSON(value?: SearchedArtifact | null): any {
         'id': value.id,
         'name': value.name,
         'description': value.description,
-        'createdOn': (value.createdOn.toISOString()),
+        'createdOn': value.createdOn,
         'createdBy': value.createdBy,
         'type': ArtifactTypeToJSON(value.type),
         'labels': value.labels,
         'state': ArtifactStateToJSON(value.state),
-        'modifiedOn': value.modifiedOn === undefined ? undefined : (value.modifiedOn.toISOString()),
+        'modifiedOn': value.modifiedOn,
         'modifiedBy': value.modifiedBy,
         'groupId': value.groupId,
     };

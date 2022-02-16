@@ -58,10 +58,10 @@ export interface VersionMetaData {
     createdBy: string;
     /**
      * 
-     * @type {Date}
+     * @type {string}
      * @memberof VersionMetaData
      */
-    createdOn: Date;
+    createdOn: string;
     /**
      * 
      * @type {ArtifactType}
@@ -126,7 +126,7 @@ export function VersionMetaDataFromJSONTyped(json: any, ignoreDiscriminator: boo
         'name': !exists(json, 'name') ? undefined : json['name'],
         'description': !exists(json, 'description') ? undefined : json['description'],
         'createdBy': json['createdBy'],
-        'createdOn': (new Date(json['createdOn'])),
+        'createdOn': json['createdOn'],
         'type': ArtifactTypeFromJSON(json['type']),
         'globalId': json['globalId'],
         'state': !exists(json, 'state') ? undefined : ArtifactStateFromJSON(json['state']),
@@ -151,7 +151,7 @@ export function VersionMetaDataToJSON(value?: VersionMetaData | null): any {
         'name': value.name,
         'description': value.description,
         'createdBy': value.createdBy,
-        'createdOn': (value.createdOn.toISOString()),
+        'createdOn': value.createdOn,
         'type': ArtifactTypeToJSON(value.type),
         'globalId': value.globalId,
         'state': ArtifactStateToJSON(value.state),

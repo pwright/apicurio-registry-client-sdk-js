@@ -52,10 +52,10 @@ export interface ArtifactMetaData {
     createdBy: string;
     /**
      * 
-     * @type {Date}
+     * @type {string}
      * @memberof ArtifactMetaData
      */
-    createdOn: Date;
+    createdOn: string;
     /**
      * 
      * @type {string}
@@ -64,10 +64,10 @@ export interface ArtifactMetaData {
     modifiedBy: string;
     /**
      * 
-     * @type {Date}
+     * @type {string}
      * @memberof ArtifactMetaData
      */
-    modifiedOn: Date;
+    modifiedOn: string;
     /**
      * The ID of a single artifact.
      * @type {string}
@@ -137,9 +137,9 @@ export function ArtifactMetaDataFromJSONTyped(json: any, ignoreDiscriminator: bo
         'name': !exists(json, 'name') ? undefined : json['name'],
         'description': !exists(json, 'description') ? undefined : json['description'],
         'createdBy': json['createdBy'],
-        'createdOn': (new Date(json['createdOn'])),
+        'createdOn': json['createdOn'],
         'modifiedBy': json['modifiedBy'],
-        'modifiedOn': (new Date(json['modifiedOn'])),
+        'modifiedOn': json['modifiedOn'],
         'id': json['id'],
         'version': json['version'],
         'type': ArtifactTypeFromJSON(json['type']),
@@ -164,9 +164,9 @@ export function ArtifactMetaDataToJSON(value?: ArtifactMetaData | null): any {
         'name': value.name,
         'description': value.description,
         'createdBy': value.createdBy,
-        'createdOn': (value.createdOn.toISOString()),
+        'createdOn': value.createdOn,
         'modifiedBy': value.modifiedBy,
-        'modifiedOn': (value.modifiedOn.toISOString()),
+        'modifiedOn': value.modifiedOn,
         'id': value.id,
         'version': value.version,
         'type': ArtifactTypeToJSON(value.type),
