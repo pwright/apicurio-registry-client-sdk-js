@@ -1,5 +1,5 @@
 {
-  "name": "apicurio-registry-client-sdk",
+  "name": "apicurio-registry-client",
   "version": "0.0.0",
   "description": "Apicurio Registry client for JavaScript",
   "main": "./dist/index.js",
