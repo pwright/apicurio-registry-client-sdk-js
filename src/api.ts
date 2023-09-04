@@ -241,6 +241,37 @@ export interface ArtifactTypeInfo {
 /**
  * 
  * @export
+ * @interface Comment
+ */
+export interface Comment {
+    /**
+     * 
+     * @type {string}
+     * @memberof Comment
+     */
+    'value': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Comment
+     */
+    'createdOn': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Comment
+     */
+    'createdBy': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Comment
+     */
+    'commentId': string;
+}
+/**
+ * 
+ * @export
  * @interface ConfigurationProperty
  */
 export interface ConfigurationProperty {
@@ -419,6 +450,21 @@ export interface GroupSearchResults {
     'count': number;
 }
 /**
+ * How to handle references when retrieving content.  References can either be left unchanged (`PRESERVE`), re-written so they are valid in the context of the registry (`REWRITE`), or fully dereferenced such that all externally referenced content is internalized (`DEREFERENCE`).
+ * @export
+ * @enum {string}
+ */
+
+export const HandleReferencesType = {
+    Preserve: 'PRESERVE',
+    Dereference: 'DEREFERENCE',
+    Rewrite: 'REWRITE'
+} as const;
+
+export type HandleReferencesType = typeof HandleReferencesType[keyof typeof HandleReferencesType];
+
+
+/**
  * 
  * @export
  * @enum {string}
@@ -514,44 +560,6 @@ export interface Limits {
     'maxRequestsPerSecondCount'?: number;
 }
 /**
- * 
- * @export
- * @interface LogConfiguration
- */
-export interface LogConfiguration {
-    /**
-     * 
-     * @type {LogLevel}
-     * @memberof LogConfiguration
-     */
-    'level': LogLevel;
-}
-
-
-/**
- * 
- * @export
- * @enum {string}
- */
-
-export const LogLevel = {
-    Debug: 'DEBUG',
-    Trace: 'TRACE',
-    Warn: 'WARN',
-    Error: 'ERROR',
-    Severe: 'SEVERE',
-    Warning: 'WARNING',
-    Info: 'INFO',
-    Config: 'CONFIG',
-    Fine: 'FINE',
-    Finer: 'FINER',
-    Finest: 'FINEST'
-} as const;
-
-export type LogLevel = typeof LogLevel[keyof typeof LogLevel];
-
-
-/**
  * All error responses, whether `4xx` or `5xx` will include one of these as the response body.
  * @export
  * @interface ModelError
@@ -585,37 +593,30 @@ export interface ModelError {
 /**
  * 
  * @export
- * @interface NamedLogConfiguration
+ * @interface NewComment
  */
-export interface NamedLogConfiguration {
+export interface NewComment {
     /**
      * 
      * @type {string}
-     * @memberof NamedLogConfiguration
+     * @memberof NewComment
      */
-    'name': string;
-    /**
-     * 
-     * @type {LogLevel}
-     * @memberof NamedLogConfiguration
-     */
-    'level': LogLevel;
+    'value': string;
 }
-
-
 /**
  * 
  * @export
- * @interface NamedLogConfigurationAllOf
+ * @enum {string}
  */
-export interface NamedLogConfigurationAllOf {
-    /**
-     * 
-     * @type {string}
-     * @memberof NamedLogConfigurationAllOf
-     */
-    'name': string;
-}
+
+export const ReferenceType = {
+    Outbound: 'OUTBOUND',
+    Inbound: 'INBOUND'
+} as const;
+
+export type ReferenceType = typeof ReferenceType[keyof typeof ReferenceType];
+
+
 /**
  * The mapping between a user/principal and their role.
  * @export
@@ -687,7 +688,8 @@ export interface Rule {
 
 export const RuleType = {
     Validity: 'VALIDITY',
-    Compatibility: 'COMPATIBILITY'
+    Compatibility: 'COMPATIBILITY',
+    Integrity: 'INTEGRITY'
 } as const;
 
 export type RuleType = typeof RuleType[keyof typeof RuleType];
@@ -719,12 +721,6 @@ export interface RuleViolationCause {
  */
 export interface RuleViolationError {
     /**
-     * List of rule violation causes.
-     * @type {Array<RuleViolationCause>}
-     * @memberof RuleViolationError
-     */
-    'causes': Array<RuleViolationCause>;
-    /**
      * The short error message.
      * @type {string}
      * @memberof RuleViolationError
@@ -748,17 +744,10 @@ export interface RuleViolationError {
      * @memberof RuleViolationError
      */
     'name'?: string;
-}
-/**
- * 
- * @export
- * @interface RuleViolationErrorAllOf
- */
-export interface RuleViolationErrorAllOf {
     /**
      * List of rule violation causes.
      * @type {Array<RuleViolationCause>}
-     * @memberof RuleViolationErrorAllOf
+     * @memberof RuleViolationError
      */
     'causes': Array<RuleViolationCause>;
 }
@@ -1487,40 +1476,6 @@ export const AdminApiAxiosParamCreator = function (configuration?: Configuration
             };
         },
         /**
-         * Returns the configured logger configuration for the provided logger name, if no logger configuration is persisted it will return the current default log configuration in the system.
-         * @summary Get a single logger configuration
-         * @param {string} logger The name of a single logger.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getLogConfiguration: async (logger: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'logger' is not null or undefined
-            assertParamExists('getLogConfiguration', 'logger', logger)
-            const localVarPath = `/admin/loggers/{logger}`
-                .replace(`{${"logger"}}`, encodeURIComponent(String(logger)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
          * Gets the details of a single role mapping (by `principalId`).  This operation can fail for the following reasons:  * No role mapping for the `principalId` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
          * @summary Return a single role mapping
          * @param {string} principalId Unique id of a principal (typically either a user or service account).
@@ -1579,14 +1534,14 @@ export const AdminApiAxiosParamCreator = function (configuration?: Configuration
             const localVarQueryParameter = {} as any;
 
             if (xRegistryPreserveGlobalId != null) {
-                localVarHeaderParameter['X-Registry-Preserve-GlobalId'] = typeof xRegistryPreserveGlobalId === 'string' 
-                    ? xRegistryPreserveGlobalId 
+                localVarHeaderParameter['X-Registry-Preserve-GlobalId'] = typeof xRegistryPreserveGlobalId === 'string'
+                    ? xRegistryPreserveGlobalId
                     : JSON.stringify(xRegistryPreserveGlobalId);
             }
 
             if (xRegistryPreserveContentId != null) {
-                localVarHeaderParameter['X-Registry-Preserve-ContentId'] = typeof xRegistryPreserveContentId === 'string' 
-                    ? xRegistryPreserveContentId 
+                localVarHeaderParameter['X-Registry-Preserve-ContentId'] = typeof xRegistryPreserveContentId === 'string'
+                    ? xRegistryPreserveContentId
                     : JSON.stringify(xRegistryPreserveContentId);
             }
 
@@ -1695,36 +1650,6 @@ export const AdminApiAxiosParamCreator = function (configuration?: Configuration
             };
         },
         /**
-         * List all of the configured logging levels.  These override the default logging configuration.
-         * @summary List logging configurations
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        listLogConfigurations: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/admin/loggers`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
          * Gets a list of all role mappings configured in the registry (if any).  This operation can fail for the following reasons:  * A server error occurred (HTTP error `500`) 
          * @summary List all role mappings
          * @param {*} [options] Override http request option.
@@ -1740,40 +1665,6 @@ export const AdminApiAxiosParamCreator = function (configuration?: Configuration
             }
 
             const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Removes the configured logger configuration (if any) for the given logger.
-         * @summary Removes logger configuration
-         * @param {string} logger The name of a single logger.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        removeLogConfiguration: async (logger: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'logger' is not null or undefined
-            assertParamExists('removeLogConfiguration', 'logger', logger)
-            const localVarPath = `/admin/loggers/{logger}`
-                .replace(`{${"logger"}}`, encodeURIComponent(String(logger)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
@@ -1816,46 +1707,6 @@ export const AdminApiAxiosParamCreator = function (configuration?: Configuration
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Configures the logger referenced by the provided logger name with the given configuration.
-         * @summary Set a logger\'s configuration
-         * @param {string} logger The name of a single logger.
-         * @param {LogConfiguration} logConfiguration The new logger configuration.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        setLogConfiguration: async (logger: string, logConfiguration: LogConfiguration, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'logger' is not null or undefined
-            assertParamExists('setLogConfiguration', 'logger', logger)
-            // verify required parameter 'logConfiguration' is not null or undefined
-            assertParamExists('setLogConfiguration', 'logConfiguration', logConfiguration)
-            const localVarPath = `/admin/loggers/{logger}`
-                .replace(`{${"logger"}}`, encodeURIComponent(String(logger)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(logConfiguration, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -2080,17 +1931,6 @@ export const AdminApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         * Returns the configured logger configuration for the provided logger name, if no logger configuration is persisted it will return the current default log configuration in the system.
-         * @summary Get a single logger configuration
-         * @param {string} logger The name of a single logger.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getLogConfiguration(logger: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<NamedLogConfiguration>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getLogConfiguration(logger, options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
          * Gets the details of a single role mapping (by `principalId`).  This operation can fail for the following reasons:  * No role mapping for the `principalId` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
          * @summary Return a single role mapping
          * @param {string} principalId Unique id of a principal (typically either a user or service account).
@@ -2145,16 +1985,6 @@ export const AdminApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         * List all of the configured logging levels.  These override the default logging configuration.
-         * @summary List logging configurations
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async listLogConfigurations(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<NamedLogConfiguration>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.listLogConfigurations(options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
          * Gets a list of all role mappings configured in the registry (if any).  This operation can fail for the following reasons:  * A server error occurred (HTTP error `500`) 
          * @summary List all role mappings
          * @param {*} [options] Override http request option.
@@ -2162,17 +1992,6 @@ export const AdminApiFp = function(configuration?: Configuration) {
          */
         async listRoleMappings(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<RoleMapping>>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.listRoleMappings(options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * Removes the configured logger configuration (if any) for the given logger.
-         * @summary Removes logger configuration
-         * @param {string} logger The name of a single logger.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async removeLogConfiguration(logger: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<NamedLogConfiguration>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.removeLogConfiguration(logger, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -2184,18 +2003,6 @@ export const AdminApiFp = function(configuration?: Configuration) {
          */
         async resetConfigProperty(propertyName: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.resetConfigProperty(propertyName, options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * Configures the logger referenced by the provided logger name with the given configuration.
-         * @summary Set a logger\'s configuration
-         * @param {string} logger The name of a single logger.
-         * @param {LogConfiguration} logConfiguration The new logger configuration.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async setLogConfiguration(logger: string, logConfiguration: LogConfiguration, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<NamedLogConfiguration>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.setLogConfiguration(logger, logConfiguration, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -2324,16 +2131,6 @@ export const AdminApiFactory = function (configuration?: Configuration, basePath
             return localVarFp.getGlobalRuleConfig(rule, options).then((request) => request(axios, basePath));
         },
         /**
-         * Returns the configured logger configuration for the provided logger name, if no logger configuration is persisted it will return the current default log configuration in the system.
-         * @summary Get a single logger configuration
-         * @param {string} logger The name of a single logger.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getLogConfiguration(logger: string, options?: any): AxiosPromise<NamedLogConfiguration> {
-            return localVarFp.getLogConfiguration(logger, options).then((request) => request(axios, basePath));
-        },
-        /**
          * Gets the details of a single role mapping (by `principalId`).  This operation can fail for the following reasons:  * No role mapping for the `principalId` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
          * @summary Return a single role mapping
          * @param {string} principalId Unique id of a principal (typically either a user or service account).
@@ -2383,15 +2180,6 @@ export const AdminApiFactory = function (configuration?: Configuration, basePath
             return localVarFp.listGlobalRules(options).then((request) => request(axios, basePath));
         },
         /**
-         * List all of the configured logging levels.  These override the default logging configuration.
-         * @summary List logging configurations
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        listLogConfigurations(options?: any): AxiosPromise<Array<NamedLogConfiguration>> {
-            return localVarFp.listLogConfigurations(options).then((request) => request(axios, basePath));
-        },
-        /**
          * Gets a list of all role mappings configured in the registry (if any).  This operation can fail for the following reasons:  * A server error occurred (HTTP error `500`) 
          * @summary List all role mappings
          * @param {*} [options] Override http request option.
@@ -2399,16 +2187,6 @@ export const AdminApiFactory = function (configuration?: Configuration, basePath
          */
         listRoleMappings(options?: any): AxiosPromise<Array<RoleMapping>> {
             return localVarFp.listRoleMappings(options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Removes the configured logger configuration (if any) for the given logger.
-         * @summary Removes logger configuration
-         * @param {string} logger The name of a single logger.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        removeLogConfiguration(logger: string, options?: any): AxiosPromise<NamedLogConfiguration> {
-            return localVarFp.removeLogConfiguration(logger, options).then((request) => request(axios, basePath));
         },
         /**
          * Resets the value of a single configuration property.  This will return the property to its default value (see external documentation for supported properties and their default values).  This operation may fail for one of the following reasons:  * Property not found or not configured (HTTP error `404`) * A server error occurred (HTTP error `500`) 
@@ -2419,17 +2197,6 @@ export const AdminApiFactory = function (configuration?: Configuration, basePath
          */
         resetConfigProperty(propertyName: string, options?: any): AxiosPromise<void> {
             return localVarFp.resetConfigProperty(propertyName, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Configures the logger referenced by the provided logger name with the given configuration.
-         * @summary Set a logger\'s configuration
-         * @param {string} logger The name of a single logger.
-         * @param {LogConfiguration} logConfiguration The new logger configuration.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        setLogConfiguration(logger: string, logConfiguration: LogConfiguration, options?: any): AxiosPromise<NamedLogConfiguration> {
-            return localVarFp.setLogConfiguration(logger, logConfiguration, options).then((request) => request(axios, basePath));
         },
         /**
          * Updates the value of a single configuration property.  This operation may fail for one of the following reasons:  * Property not found or not configured (HTTP error `404`) * A server error occurred (HTTP error `500`) 
@@ -2570,18 +2337,6 @@ export class AdminApi extends BaseAPI {
     }
 
     /**
-     * Returns the configured logger configuration for the provided logger name, if no logger configuration is persisted it will return the current default log configuration in the system.
-     * @summary Get a single logger configuration
-     * @param {string} logger The name of a single logger.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof AdminApi
-     */
-    public getLogConfiguration(logger: string, options?: AxiosRequestConfig) {
-        return AdminApiFp(this.configuration).getLogConfiguration(logger, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
      * Gets the details of a single role mapping (by `principalId`).  This operation can fail for the following reasons:  * No role mapping for the `principalId` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
      * @summary Return a single role mapping
      * @param {string} principalId Unique id of a principal (typically either a user or service account).
@@ -2641,17 +2396,6 @@ export class AdminApi extends BaseAPI {
     }
 
     /**
-     * List all of the configured logging levels.  These override the default logging configuration.
-     * @summary List logging configurations
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof AdminApi
-     */
-    public listLogConfigurations(options?: AxiosRequestConfig) {
-        return AdminApiFp(this.configuration).listLogConfigurations(options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
      * Gets a list of all role mappings configured in the registry (if any).  This operation can fail for the following reasons:  * A server error occurred (HTTP error `500`) 
      * @summary List all role mappings
      * @param {*} [options] Override http request option.
@@ -2660,18 +2404,6 @@ export class AdminApi extends BaseAPI {
      */
     public listRoleMappings(options?: AxiosRequestConfig) {
         return AdminApiFp(this.configuration).listRoleMappings(options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Removes the configured logger configuration (if any) for the given logger.
-     * @summary Removes logger configuration
-     * @param {string} logger The name of a single logger.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof AdminApi
-     */
-    public removeLogConfiguration(logger: string, options?: AxiosRequestConfig) {
-        return AdminApiFp(this.configuration).removeLogConfiguration(logger, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -2684,19 +2416,6 @@ export class AdminApi extends BaseAPI {
      */
     public resetConfigProperty(propertyName: string, options?: AxiosRequestConfig) {
         return AdminApiFp(this.configuration).resetConfigProperty(propertyName, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Configures the logger referenced by the provided logger name with the given configuration.
-     * @summary Set a logger\'s configuration
-     * @param {string} logger The name of a single logger.
-     * @param {LogConfiguration} logConfiguration The new logger configuration.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof AdminApi
-     */
-    public setLogConfiguration(logger: string, logConfiguration: LogConfiguration, options?: AxiosRequestConfig) {
-        return AdminApiFp(this.configuration).setLogConfiguration(logger, logConfiguration, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -2738,6 +2457,7 @@ export class AdminApi extends BaseAPI {
         return AdminApiFp(this.configuration).updateRoleMapping(principalId, updateRole, options).then((request) => request(this.axios, this.basePath));
     }
 }
+
 
 
 /**
@@ -2795,11 +2515,11 @@ export const ArtifactRulesApiAxiosParamCreator = function (configuration?: Confi
          * @summary Delete artifact rule
          * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
          * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
-         * @param {'VALIDITY' | 'COMPATIBILITY'} rule The unique name/type of a rule.
+         * @param {DeleteArtifactRuleRuleEnum} rule The unique name/type of a rule.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteArtifactRule: async (groupId: string, artifactId: string, rule: 'VALIDITY' | 'COMPATIBILITY', options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        deleteArtifactRule: async (groupId: string, artifactId: string, rule: DeleteArtifactRuleRuleEnum, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'groupId' is not null or undefined
             assertParamExists('deleteArtifactRule', 'groupId', groupId)
             // verify required parameter 'artifactId' is not null or undefined
@@ -2875,11 +2595,11 @@ export const ArtifactRulesApiAxiosParamCreator = function (configuration?: Confi
          * @summary Get artifact rule configuration
          * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
          * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
-         * @param {'VALIDITY' | 'COMPATIBILITY'} rule The unique name/type of a rule.
+         * @param {GetArtifactRuleConfigRuleEnum} rule The unique name/type of a rule.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getArtifactRuleConfig: async (groupId: string, artifactId: string, rule: 'VALIDITY' | 'COMPATIBILITY', options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getArtifactRuleConfig: async (groupId: string, artifactId: string, rule: GetArtifactRuleConfigRuleEnum, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'groupId' is not null or undefined
             assertParamExists('getArtifactRuleConfig', 'groupId', groupId)
             // verify required parameter 'artifactId' is not null or undefined
@@ -2999,12 +2719,12 @@ export const ArtifactRulesApiAxiosParamCreator = function (configuration?: Confi
          * @summary Update artifact rule configuration
          * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
          * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
-         * @param {'VALIDITY' | 'COMPATIBILITY'} rule The unique name/type of a rule.
+         * @param {UpdateArtifactRuleConfigRuleEnum} rule The unique name/type of a rule.
          * @param {Rule} rule2 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateArtifactRuleConfig: async (groupId: string, artifactId: string, rule: 'VALIDITY' | 'COMPATIBILITY', rule2: Rule, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        updateArtifactRuleConfig: async (groupId: string, artifactId: string, rule: UpdateArtifactRuleConfigRuleEnum, rule2: Rule, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'groupId' is not null or undefined
             assertParamExists('updateArtifactRuleConfig', 'groupId', groupId)
             // verify required parameter 'artifactId' is not null or undefined
@@ -3070,11 +2790,11 @@ export const ArtifactRulesApiFp = function(configuration?: Configuration) {
          * @summary Delete artifact rule
          * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
          * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
-         * @param {'VALIDITY' | 'COMPATIBILITY'} rule The unique name/type of a rule.
+         * @param {DeleteArtifactRuleRuleEnum} rule The unique name/type of a rule.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async deleteArtifactRule(groupId: string, artifactId: string, rule: 'VALIDITY' | 'COMPATIBILITY', options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async deleteArtifactRule(groupId: string, artifactId: string, rule: DeleteArtifactRuleRuleEnum, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.deleteArtifactRule(groupId, artifactId, rule, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -3095,11 +2815,11 @@ export const ArtifactRulesApiFp = function(configuration?: Configuration) {
          * @summary Get artifact rule configuration
          * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
          * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
-         * @param {'VALIDITY' | 'COMPATIBILITY'} rule The unique name/type of a rule.
+         * @param {GetArtifactRuleConfigRuleEnum} rule The unique name/type of a rule.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getArtifactRuleConfig(groupId: string, artifactId: string, rule: 'VALIDITY' | 'COMPATIBILITY', options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Rule>> {
+        async getArtifactRuleConfig(groupId: string, artifactId: string, rule: GetArtifactRuleConfigRuleEnum, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Rule>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getArtifactRuleConfig(groupId, artifactId, rule, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -3133,12 +2853,12 @@ export const ArtifactRulesApiFp = function(configuration?: Configuration) {
          * @summary Update artifact rule configuration
          * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
          * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
-         * @param {'VALIDITY' | 'COMPATIBILITY'} rule The unique name/type of a rule.
+         * @param {UpdateArtifactRuleConfigRuleEnum} rule The unique name/type of a rule.
          * @param {Rule} rule2 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async updateArtifactRuleConfig(groupId: string, artifactId: string, rule: 'VALIDITY' | 'COMPATIBILITY', rule2: Rule, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Rule>> {
+        async updateArtifactRuleConfig(groupId: string, artifactId: string, rule: UpdateArtifactRuleConfigRuleEnum, rule2: Rule, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Rule>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.updateArtifactRuleConfig(groupId, artifactId, rule, rule2, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -3169,11 +2889,11 @@ export const ArtifactRulesApiFactory = function (configuration?: Configuration, 
          * @summary Delete artifact rule
          * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
          * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
-         * @param {'VALIDITY' | 'COMPATIBILITY'} rule The unique name/type of a rule.
+         * @param {DeleteArtifactRuleRuleEnum} rule The unique name/type of a rule.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteArtifactRule(groupId: string, artifactId: string, rule: 'VALIDITY' | 'COMPATIBILITY', options?: any): AxiosPromise<void> {
+        deleteArtifactRule(groupId: string, artifactId: string, rule: DeleteArtifactRuleRuleEnum, options?: any): AxiosPromise<void> {
             return localVarFp.deleteArtifactRule(groupId, artifactId, rule, options).then((request) => request(axios, basePath));
         },
         /**
@@ -3192,11 +2912,11 @@ export const ArtifactRulesApiFactory = function (configuration?: Configuration, 
          * @summary Get artifact rule configuration
          * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
          * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
-         * @param {'VALIDITY' | 'COMPATIBILITY'} rule The unique name/type of a rule.
+         * @param {GetArtifactRuleConfigRuleEnum} rule The unique name/type of a rule.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getArtifactRuleConfig(groupId: string, artifactId: string, rule: 'VALIDITY' | 'COMPATIBILITY', options?: any): AxiosPromise<Rule> {
+        getArtifactRuleConfig(groupId: string, artifactId: string, rule: GetArtifactRuleConfigRuleEnum, options?: any): AxiosPromise<Rule> {
             return localVarFp.getArtifactRuleConfig(groupId, artifactId, rule, options).then((request) => request(axios, basePath));
         },
         /**
@@ -3227,12 +2947,12 @@ export const ArtifactRulesApiFactory = function (configuration?: Configuration, 
          * @summary Update artifact rule configuration
          * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
          * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
-         * @param {'VALIDITY' | 'COMPATIBILITY'} rule The unique name/type of a rule.
+         * @param {UpdateArtifactRuleConfigRuleEnum} rule The unique name/type of a rule.
          * @param {Rule} rule2 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateArtifactRuleConfig(groupId: string, artifactId: string, rule: 'VALIDITY' | 'COMPATIBILITY', rule2: Rule, options?: any): AxiosPromise<Rule> {
+        updateArtifactRuleConfig(groupId: string, artifactId: string, rule: UpdateArtifactRuleConfigRuleEnum, rule2: Rule, options?: any): AxiosPromise<Rule> {
             return localVarFp.updateArtifactRuleConfig(groupId, artifactId, rule, rule2, options).then((request) => request(axios, basePath));
         },
     };
@@ -3264,12 +2984,12 @@ export class ArtifactRulesApi extends BaseAPI {
      * @summary Delete artifact rule
      * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
      * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
-     * @param {'VALIDITY' | 'COMPATIBILITY'} rule The unique name/type of a rule.
+     * @param {DeleteArtifactRuleRuleEnum} rule The unique name/type of a rule.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ArtifactRulesApi
      */
-    public deleteArtifactRule(groupId: string, artifactId: string, rule: 'VALIDITY' | 'COMPATIBILITY', options?: AxiosRequestConfig) {
+    public deleteArtifactRule(groupId: string, artifactId: string, rule: DeleteArtifactRuleRuleEnum, options?: AxiosRequestConfig) {
         return ArtifactRulesApiFp(this.configuration).deleteArtifactRule(groupId, artifactId, rule, options).then((request) => request(this.axios, this.basePath));
     }
 
@@ -3291,12 +3011,12 @@ export class ArtifactRulesApi extends BaseAPI {
      * @summary Get artifact rule configuration
      * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
      * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
-     * @param {'VALIDITY' | 'COMPATIBILITY'} rule The unique name/type of a rule.
+     * @param {GetArtifactRuleConfigRuleEnum} rule The unique name/type of a rule.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ArtifactRulesApi
      */
-    public getArtifactRuleConfig(groupId: string, artifactId: string, rule: 'VALIDITY' | 'COMPATIBILITY', options?: AxiosRequestConfig) {
+    public getArtifactRuleConfig(groupId: string, artifactId: string, rule: GetArtifactRuleConfigRuleEnum, options?: AxiosRequestConfig) {
         return ArtifactRulesApiFp(this.configuration).getArtifactRuleConfig(groupId, artifactId, rule, options).then((request) => request(this.axios, this.basePath));
     }
 
@@ -3332,16 +3052,44 @@ export class ArtifactRulesApi extends BaseAPI {
      * @summary Update artifact rule configuration
      * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
      * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
-     * @param {'VALIDITY' | 'COMPATIBILITY'} rule The unique name/type of a rule.
+     * @param {UpdateArtifactRuleConfigRuleEnum} rule The unique name/type of a rule.
      * @param {Rule} rule2 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ArtifactRulesApi
      */
-    public updateArtifactRuleConfig(groupId: string, artifactId: string, rule: 'VALIDITY' | 'COMPATIBILITY', rule2: Rule, options?: AxiosRequestConfig) {
+    public updateArtifactRuleConfig(groupId: string, artifactId: string, rule: UpdateArtifactRuleConfigRuleEnum, rule2: Rule, options?: AxiosRequestConfig) {
         return ArtifactRulesApiFp(this.configuration).updateArtifactRuleConfig(groupId, artifactId, rule, rule2, options).then((request) => request(this.axios, this.basePath));
     }
 }
+
+/**
+ * @export
+ */
+export const DeleteArtifactRuleRuleEnum = {
+    Validity: 'VALIDITY',
+    Compatibility: 'COMPATIBILITY',
+    Integrity: 'INTEGRITY'
+} as const;
+export type DeleteArtifactRuleRuleEnum = typeof DeleteArtifactRuleRuleEnum[keyof typeof DeleteArtifactRuleRuleEnum];
+/**
+ * @export
+ */
+export const GetArtifactRuleConfigRuleEnum = {
+    Validity: 'VALIDITY',
+    Compatibility: 'COMPATIBILITY',
+    Integrity: 'INTEGRITY'
+} as const;
+export type GetArtifactRuleConfigRuleEnum = typeof GetArtifactRuleConfigRuleEnum[keyof typeof GetArtifactRuleConfigRuleEnum];
+/**
+ * @export
+ */
+export const UpdateArtifactRuleConfigRuleEnum = {
+    Validity: 'VALIDITY',
+    Compatibility: 'COMPATIBILITY',
+    Integrity: 'INTEGRITY'
+} as const;
+export type UpdateArtifactRuleConfigRuleEnum = typeof UpdateArtifactRuleConfigRuleEnum[keyof typeof UpdateArtifactRuleConfigRuleEnum];
 
 
 /**
@@ -3442,6 +3190,7 @@ export class ArtifactTypeApi extends BaseAPI {
 }
 
 
+
 /**
  * ArtifactsApi - axios parameter creator
  * @export
@@ -3463,11 +3212,11 @@ export const ArtifactsApiAxiosParamCreator = function (configuration?: Configura
          * @param {string} [xRegistryName] Specifies the name of artifact being added. Name must be ASCII-only string. If this is not provided, the server will extract the name from the artifact content.
          * @param {string} [xRegistryNameEncoded] Specifies the name of artifact being added. Value of this must be Base64 encoded string. If this is not provided, the server will extract the name from the artifact content.
          * @param {string} [xRegistryContentHash] Specifies the (optional) hash of the artifact to be verified.
-         * @param {'SHA256' | 'MD5'} [xRegistryHashAlgorithm] The algorithm to use when checking the content validity. (available: SHA256, MD5; default: SHA256)
+         * @param {CreateArtifactXRegistryHashAlgorithmEnum} [xRegistryHashAlgorithm] The algorithm to use when checking the content validity. (available: SHA256, MD5; default: SHA256)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        createArtifact: async (groupId: string, body: File, xRegistryArtifactType?: string, xRegistryArtifactId?: string, xRegistryVersion?: string, ifExists?: IfExists, canonical?: boolean, xRegistryDescription?: string, xRegistryDescriptionEncoded?: string, xRegistryName?: string, xRegistryNameEncoded?: string, xRegistryContentHash?: string, xRegistryHashAlgorithm?: 'SHA256' | 'MD5', options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        createArtifact: async (groupId: string, body: File, xRegistryArtifactType?: string, xRegistryArtifactId?: string, xRegistryVersion?: string, ifExists?: IfExists, canonical?: boolean, xRegistryDescription?: string, xRegistryDescriptionEncoded?: string, xRegistryName?: string, xRegistryNameEncoded?: string, xRegistryContentHash?: string, xRegistryHashAlgorithm?: CreateArtifactXRegistryHashAlgorithmEnum, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'groupId' is not null or undefined
             assertParamExists('createArtifact', 'groupId', groupId)
             // verify required parameter 'body' is not null or undefined
@@ -3619,11 +3368,11 @@ export const ArtifactsApiAxiosParamCreator = function (configuration?: Configura
          * Gets the content for an artifact version in the registry using its globally unique identifier.  This operation may fail for one of the following reasons:  * No artifact version with this `globalId` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
          * @summary Get artifact by global ID
          * @param {number} globalId Global identifier for an artifact version.
-         * @param {boolean} [dereference] Allows the user to specify if the content should be dereferenced when being returned
+         * @param {HandleReferencesType} [references] Allows the user to specify how references in the content should be treated.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getContentByGlobalId: async (globalId: number, dereference?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getContentByGlobalId: async (globalId: number, references?: HandleReferencesType, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'globalId' is not null or undefined
             assertParamExists('getContentByGlobalId', 'globalId', globalId)
             const localVarPath = `/ids/globalIds/{globalId}`
@@ -3639,8 +3388,8 @@ export const ArtifactsApiAxiosParamCreator = function (configuration?: Configura
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
-            if (dereference !== undefined) {
-                localVarQueryParameter['dereference'] = dereference;
+            if (references !== undefined) {
+                localVarQueryParameter['references'] = references;
             }
 
 
@@ -3727,11 +3476,11 @@ export const ArtifactsApiAxiosParamCreator = function (configuration?: Configura
          * @summary Get latest artifact
          * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
          * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
-         * @param {boolean} [dereference] Allows the user to specify if the content should be dereferenced when being returned
+         * @param {HandleReferencesType} [references] Allows the user to specify how references in the content should be treated.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getLatestArtifact: async (groupId: string, artifactId: string, dereference?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getLatestArtifact: async (groupId: string, artifactId: string, references?: HandleReferencesType, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'groupId' is not null or undefined
             assertParamExists('getLatestArtifact', 'groupId', groupId)
             // verify required parameter 'artifactId' is not null or undefined
@@ -3750,8 +3499,8 @@ export const ArtifactsApiAxiosParamCreator = function (configuration?: Configura
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
-            if (dereference !== undefined) {
-                localVarQueryParameter['dereference'] = dereference;
+            if (references !== undefined) {
+                localVarQueryParameter['references'] = references;
             }
 
 
@@ -3891,10 +3640,11 @@ export const ArtifactsApiAxiosParamCreator = function (configuration?: Configura
          * Returns a list containing all the artifact references using the artifact global ID.  This operation may fail for one of the following reasons:  * A server error occurred (HTTP error `500`)
          * @summary List artifact references by global ID
          * @param {number} globalId Global identifier for an artifact version.
+         * @param {ReferenceType} [refType] Determines the type of reference to return, either INBOUND or OUTBOUND.  Defaults to OUTBOUND.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        referencesByGlobalId: async (globalId: number, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        referencesByGlobalId: async (globalId: number, refType?: ReferenceType, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'globalId' is not null or undefined
             assertParamExists('referencesByGlobalId', 'globalId', globalId)
             const localVarPath = `/ids/globalIds/{globalId}/references`
@@ -3909,6 +3659,10 @@ export const ArtifactsApiAxiosParamCreator = function (configuration?: Configura
             const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+
+            if (refType !== undefined) {
+                localVarQueryParameter['refType'] = refType;
+            }
 
 
     
@@ -4014,12 +3768,12 @@ export const ArtifactsApiAxiosParamCreator = function (configuration?: Configura
          * @param {string} [artifactType] Indicates the type of artifact represented by the content being used for the search.  This is only needed when using the &#x60;canonical&#x60; query parameter, so that the server knows how to canonicalize the content prior to searching for matching artifacts.
          * @param {number} [offset] The number of artifacts to skip before starting to collect the result set.  Defaults to 0.
          * @param {number} [limit] The number of artifacts to return.  Defaults to 20.
-         * @param {'asc' | 'desc'} [order] Sort order, ascending (&#x60;asc&#x60;) or descending (&#x60;desc&#x60;).
-         * @param {'name' | 'createdOn'} [orderby] The field to sort by.  Can be one of:  * &#x60;name&#x60; * &#x60;createdOn&#x60; 
+         * @param {SearchArtifactsByContentOrderEnum} [order] Sort order, ascending (&#x60;asc&#x60;) or descending (&#x60;desc&#x60;).
+         * @param {SearchArtifactsByContentOrderbyEnum} [orderby] The field to sort by.  Can be one of:  * &#x60;name&#x60; * &#x60;createdOn&#x60; 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        searchArtifactsByContent: async (body: File, canonical?: boolean, artifactType?: string, offset?: number, limit?: number, order?: 'asc' | 'desc', orderby?: 'name' | 'createdOn', options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        searchArtifactsByContent: async (body: File, canonical?: boolean, artifactType?: string, offset?: number, limit?: number, order?: SearchArtifactsByContentOrderEnum, orderby?: SearchArtifactsByContentOrderbyEnum, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'body' is not null or undefined
             assertParamExists('searchArtifactsByContent', 'body', body)
             const localVarPath = `/search/artifacts`;
@@ -4210,11 +3964,11 @@ export const ArtifactsApiFp = function(configuration?: Configuration) {
          * @param {string} [xRegistryName] Specifies the name of artifact being added. Name must be ASCII-only string. If this is not provided, the server will extract the name from the artifact content.
          * @param {string} [xRegistryNameEncoded] Specifies the name of artifact being added. Value of this must be Base64 encoded string. If this is not provided, the server will extract the name from the artifact content.
          * @param {string} [xRegistryContentHash] Specifies the (optional) hash of the artifact to be verified.
-         * @param {'SHA256' | 'MD5'} [xRegistryHashAlgorithm] The algorithm to use when checking the content validity. (available: SHA256, MD5; default: SHA256)
+         * @param {CreateArtifactXRegistryHashAlgorithmEnum} [xRegistryHashAlgorithm] The algorithm to use when checking the content validity. (available: SHA256, MD5; default: SHA256)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async createArtifact(groupId: string, body: File, xRegistryArtifactType?: string, xRegistryArtifactId?: string, xRegistryVersion?: string, ifExists?: IfExists, canonical?: boolean, xRegistryDescription?: string, xRegistryDescriptionEncoded?: string, xRegistryName?: string, xRegistryNameEncoded?: string, xRegistryContentHash?: string, xRegistryHashAlgorithm?: 'SHA256' | 'MD5', options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ArtifactMetaData>> {
+        async createArtifact(groupId: string, body: File, xRegistryArtifactType?: string, xRegistryArtifactId?: string, xRegistryVersion?: string, ifExists?: IfExists, canonical?: boolean, xRegistryDescription?: string, xRegistryDescriptionEncoded?: string, xRegistryName?: string, xRegistryNameEncoded?: string, xRegistryContentHash?: string, xRegistryHashAlgorithm?: CreateArtifactXRegistryHashAlgorithmEnum, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ArtifactMetaData>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.createArtifact(groupId, body, xRegistryArtifactType, xRegistryArtifactId, xRegistryVersion, ifExists, canonical, xRegistryDescription, xRegistryDescriptionEncoded, xRegistryName, xRegistryNameEncoded, xRegistryContentHash, xRegistryHashAlgorithm, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -4245,12 +3999,12 @@ export const ArtifactsApiFp = function(configuration?: Configuration) {
          * Gets the content for an artifact version in the registry using its globally unique identifier.  This operation may fail for one of the following reasons:  * No artifact version with this `globalId` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
          * @summary Get artifact by global ID
          * @param {number} globalId Global identifier for an artifact version.
-         * @param {boolean} [dereference] Allows the user to specify if the content should be dereferenced when being returned
+         * @param {HandleReferencesType} [references] Allows the user to specify how references in the content should be treated.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getContentByGlobalId(globalId: number, dereference?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<File>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getContentByGlobalId(globalId, dereference, options);
+        async getContentByGlobalId(globalId: number, references?: HandleReferencesType, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<File>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getContentByGlobalId(globalId, references, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -4280,12 +4034,12 @@ export const ArtifactsApiFp = function(configuration?: Configuration) {
          * @summary Get latest artifact
          * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
          * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
-         * @param {boolean} [dereference] Allows the user to specify if the content should be dereferenced when being returned
+         * @param {HandleReferencesType} [references] Allows the user to specify how references in the content should be treated.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getLatestArtifact(groupId: string, artifactId: string, dereference?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<File>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getLatestArtifact(groupId, artifactId, dereference, options);
+        async getLatestArtifact(groupId: string, artifactId: string, references?: HandleReferencesType, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<File>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getLatestArtifact(groupId, artifactId, references, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -4329,11 +4083,12 @@ export const ArtifactsApiFp = function(configuration?: Configuration) {
          * Returns a list containing all the artifact references using the artifact global ID.  This operation may fail for one of the following reasons:  * A server error occurred (HTTP error `500`)
          * @summary List artifact references by global ID
          * @param {number} globalId Global identifier for an artifact version.
+         * @param {ReferenceType} [refType] Determines the type of reference to return, either INBOUND or OUTBOUND.  Defaults to OUTBOUND.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async referencesByGlobalId(globalId: number, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ArtifactReference>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.referencesByGlobalId(globalId, options);
+        async referencesByGlobalId(globalId: number, refType?: ReferenceType, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ArtifactReference>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.referencesByGlobalId(globalId, refType, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -4365,12 +4120,12 @@ export const ArtifactsApiFp = function(configuration?: Configuration) {
          * @param {string} [artifactType] Indicates the type of artifact represented by the content being used for the search.  This is only needed when using the &#x60;canonical&#x60; query parameter, so that the server knows how to canonicalize the content prior to searching for matching artifacts.
          * @param {number} [offset] The number of artifacts to skip before starting to collect the result set.  Defaults to 0.
          * @param {number} [limit] The number of artifacts to return.  Defaults to 20.
-         * @param {'asc' | 'desc'} [order] Sort order, ascending (&#x60;asc&#x60;) or descending (&#x60;desc&#x60;).
-         * @param {'name' | 'createdOn'} [orderby] The field to sort by.  Can be one of:  * &#x60;name&#x60; * &#x60;createdOn&#x60; 
+         * @param {SearchArtifactsByContentOrderEnum} [order] Sort order, ascending (&#x60;asc&#x60;) or descending (&#x60;desc&#x60;).
+         * @param {SearchArtifactsByContentOrderbyEnum} [orderby] The field to sort by.  Can be one of:  * &#x60;name&#x60; * &#x60;createdOn&#x60; 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async searchArtifactsByContent(body: File, canonical?: boolean, artifactType?: string, offset?: number, limit?: number, order?: 'asc' | 'desc', orderby?: 'name' | 'createdOn', options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ArtifactSearchResults>> {
+        async searchArtifactsByContent(body: File, canonical?: boolean, artifactType?: string, offset?: number, limit?: number, order?: SearchArtifactsByContentOrderEnum, orderby?: SearchArtifactsByContentOrderbyEnum, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ArtifactSearchResults>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.searchArtifactsByContent(body, canonical, artifactType, offset, limit, order, orderby, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -4430,11 +4185,11 @@ export const ArtifactsApiFactory = function (configuration?: Configuration, base
          * @param {string} [xRegistryName] Specifies the name of artifact being added. Name must be ASCII-only string. If this is not provided, the server will extract the name from the artifact content.
          * @param {string} [xRegistryNameEncoded] Specifies the name of artifact being added. Value of this must be Base64 encoded string. If this is not provided, the server will extract the name from the artifact content.
          * @param {string} [xRegistryContentHash] Specifies the (optional) hash of the artifact to be verified.
-         * @param {'SHA256' | 'MD5'} [xRegistryHashAlgorithm] The algorithm to use when checking the content validity. (available: SHA256, MD5; default: SHA256)
+         * @param {CreateArtifactXRegistryHashAlgorithmEnum} [xRegistryHashAlgorithm] The algorithm to use when checking the content validity. (available: SHA256, MD5; default: SHA256)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        createArtifact(groupId: string, body: File, xRegistryArtifactType?: string, xRegistryArtifactId?: string, xRegistryVersion?: string, ifExists?: IfExists, canonical?: boolean, xRegistryDescription?: string, xRegistryDescriptionEncoded?: string, xRegistryName?: string, xRegistryNameEncoded?: string, xRegistryContentHash?: string, xRegistryHashAlgorithm?: 'SHA256' | 'MD5', options?: any): AxiosPromise<ArtifactMetaData> {
+        createArtifact(groupId: string, body: File, xRegistryArtifactType?: string, xRegistryArtifactId?: string, xRegistryVersion?: string, ifExists?: IfExists, canonical?: boolean, xRegistryDescription?: string, xRegistryDescriptionEncoded?: string, xRegistryName?: string, xRegistryNameEncoded?: string, xRegistryContentHash?: string, xRegistryHashAlgorithm?: CreateArtifactXRegistryHashAlgorithmEnum, options?: any): AxiosPromise<ArtifactMetaData> {
             return localVarFp.createArtifact(groupId, body, xRegistryArtifactType, xRegistryArtifactId, xRegistryVersion, ifExists, canonical, xRegistryDescription, xRegistryDescriptionEncoded, xRegistryName, xRegistryNameEncoded, xRegistryContentHash, xRegistryHashAlgorithm, options).then((request) => request(axios, basePath));
         },
         /**
@@ -4462,12 +4217,12 @@ export const ArtifactsApiFactory = function (configuration?: Configuration, base
          * Gets the content for an artifact version in the registry using its globally unique identifier.  This operation may fail for one of the following reasons:  * No artifact version with this `globalId` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
          * @summary Get artifact by global ID
          * @param {number} globalId Global identifier for an artifact version.
-         * @param {boolean} [dereference] Allows the user to specify if the content should be dereferenced when being returned
+         * @param {HandleReferencesType} [references] Allows the user to specify how references in the content should be treated.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getContentByGlobalId(globalId: number, dereference?: boolean, options?: any): AxiosPromise<File> {
-            return localVarFp.getContentByGlobalId(globalId, dereference, options).then((request) => request(axios, basePath));
+        getContentByGlobalId(globalId: number, references?: HandleReferencesType, options?: any): AxiosPromise<File> {
+            return localVarFp.getContentByGlobalId(globalId, references, options).then((request) => request(axios, basePath));
         },
         /**
          * Gets the content for an artifact version in the registry using the  SHA-256 hash of the content.  This content hash may be shared by multiple artifact versions in the case where the artifact versions have identical content.  This operation may fail for one of the following reasons:  * No content with this `contentHash` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
@@ -4494,12 +4249,12 @@ export const ArtifactsApiFactory = function (configuration?: Configuration, base
          * @summary Get latest artifact
          * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
          * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
-         * @param {boolean} [dereference] Allows the user to specify if the content should be dereferenced when being returned
+         * @param {HandleReferencesType} [references] Allows the user to specify how references in the content should be treated.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getLatestArtifact(groupId: string, artifactId: string, dereference?: boolean, options?: any): AxiosPromise<File> {
-            return localVarFp.getLatestArtifact(groupId, artifactId, dereference, options).then((request) => request(axios, basePath));
+        getLatestArtifact(groupId: string, artifactId: string, references?: HandleReferencesType, options?: any): AxiosPromise<File> {
+            return localVarFp.getLatestArtifact(groupId, artifactId, references, options).then((request) => request(axios, basePath));
         },
         /**
          * Returns a list of all artifacts in the group.  This list is paged.
@@ -4539,11 +4294,12 @@ export const ArtifactsApiFactory = function (configuration?: Configuration, base
          * Returns a list containing all the artifact references using the artifact global ID.  This operation may fail for one of the following reasons:  * A server error occurred (HTTP error `500`)
          * @summary List artifact references by global ID
          * @param {number} globalId Global identifier for an artifact version.
+         * @param {ReferenceType} [refType] Determines the type of reference to return, either INBOUND or OUTBOUND.  Defaults to OUTBOUND.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        referencesByGlobalId(globalId: number, options?: any): AxiosPromise<Array<ArtifactReference>> {
-            return localVarFp.referencesByGlobalId(globalId, options).then((request) => request(axios, basePath));
+        referencesByGlobalId(globalId: number, refType?: ReferenceType, options?: any): AxiosPromise<Array<ArtifactReference>> {
+            return localVarFp.referencesByGlobalId(globalId, refType, options).then((request) => request(axios, basePath));
         },
         /**
          * Returns a paginated list of all artifacts that match the provided filter criteria. 
@@ -4573,12 +4329,12 @@ export const ArtifactsApiFactory = function (configuration?: Configuration, base
          * @param {string} [artifactType] Indicates the type of artifact represented by the content being used for the search.  This is only needed when using the &#x60;canonical&#x60; query parameter, so that the server knows how to canonicalize the content prior to searching for matching artifacts.
          * @param {number} [offset] The number of artifacts to skip before starting to collect the result set.  Defaults to 0.
          * @param {number} [limit] The number of artifacts to return.  Defaults to 20.
-         * @param {'asc' | 'desc'} [order] Sort order, ascending (&#x60;asc&#x60;) or descending (&#x60;desc&#x60;).
-         * @param {'name' | 'createdOn'} [orderby] The field to sort by.  Can be one of:  * &#x60;name&#x60; * &#x60;createdOn&#x60; 
+         * @param {SearchArtifactsByContentOrderEnum} [order] Sort order, ascending (&#x60;asc&#x60;) or descending (&#x60;desc&#x60;).
+         * @param {SearchArtifactsByContentOrderbyEnum} [orderby] The field to sort by.  Can be one of:  * &#x60;name&#x60; * &#x60;createdOn&#x60; 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        searchArtifactsByContent(body: File, canonical?: boolean, artifactType?: string, offset?: number, limit?: number, order?: 'asc' | 'desc', orderby?: 'name' | 'createdOn', options?: any): AxiosPromise<ArtifactSearchResults> {
+        searchArtifactsByContent(body: File, canonical?: boolean, artifactType?: string, offset?: number, limit?: number, order?: SearchArtifactsByContentOrderEnum, orderby?: SearchArtifactsByContentOrderbyEnum, options?: any): AxiosPromise<ArtifactSearchResults> {
             return localVarFp.searchArtifactsByContent(body, canonical, artifactType, offset, limit, order, orderby, options).then((request) => request(axios, basePath));
         },
         /**
@@ -4635,12 +4391,12 @@ export class ArtifactsApi extends BaseAPI {
      * @param {string} [xRegistryName] Specifies the name of artifact being added. Name must be ASCII-only string. If this is not provided, the server will extract the name from the artifact content.
      * @param {string} [xRegistryNameEncoded] Specifies the name of artifact being added. Value of this must be Base64 encoded string. If this is not provided, the server will extract the name from the artifact content.
      * @param {string} [xRegistryContentHash] Specifies the (optional) hash of the artifact to be verified.
-     * @param {'SHA256' | 'MD5'} [xRegistryHashAlgorithm] The algorithm to use when checking the content validity. (available: SHA256, MD5; default: SHA256)
+     * @param {CreateArtifactXRegistryHashAlgorithmEnum} [xRegistryHashAlgorithm] The algorithm to use when checking the content validity. (available: SHA256, MD5; default: SHA256)
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ArtifactsApi
      */
-    public createArtifact(groupId: string, body: File, xRegistryArtifactType?: string, xRegistryArtifactId?: string, xRegistryVersion?: string, ifExists?: IfExists, canonical?: boolean, xRegistryDescription?: string, xRegistryDescriptionEncoded?: string, xRegistryName?: string, xRegistryNameEncoded?: string, xRegistryContentHash?: string, xRegistryHashAlgorithm?: 'SHA256' | 'MD5', options?: AxiosRequestConfig) {
+    public createArtifact(groupId: string, body: File, xRegistryArtifactType?: string, xRegistryArtifactId?: string, xRegistryVersion?: string, ifExists?: IfExists, canonical?: boolean, xRegistryDescription?: string, xRegistryDescriptionEncoded?: string, xRegistryName?: string, xRegistryNameEncoded?: string, xRegistryContentHash?: string, xRegistryHashAlgorithm?: CreateArtifactXRegistryHashAlgorithmEnum, options?: AxiosRequestConfig) {
         return ArtifactsApiFp(this.configuration).createArtifact(groupId, body, xRegistryArtifactType, xRegistryArtifactId, xRegistryVersion, ifExists, canonical, xRegistryDescription, xRegistryDescriptionEncoded, xRegistryName, xRegistryNameEncoded, xRegistryContentHash, xRegistryHashAlgorithm, options).then((request) => request(this.axios, this.basePath));
     }
 
@@ -4673,13 +4429,13 @@ export class ArtifactsApi extends BaseAPI {
      * Gets the content for an artifact version in the registry using its globally unique identifier.  This operation may fail for one of the following reasons:  * No artifact version with this `globalId` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
      * @summary Get artifact by global ID
      * @param {number} globalId Global identifier for an artifact version.
-     * @param {boolean} [dereference] Allows the user to specify if the content should be dereferenced when being returned
+     * @param {HandleReferencesType} [references] Allows the user to specify how references in the content should be treated.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ArtifactsApi
      */
-    public getContentByGlobalId(globalId: number, dereference?: boolean, options?: AxiosRequestConfig) {
-        return ArtifactsApiFp(this.configuration).getContentByGlobalId(globalId, dereference, options).then((request) => request(this.axios, this.basePath));
+    public getContentByGlobalId(globalId: number, references?: HandleReferencesType, options?: AxiosRequestConfig) {
+        return ArtifactsApiFp(this.configuration).getContentByGlobalId(globalId, references, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4711,13 +4467,13 @@ export class ArtifactsApi extends BaseAPI {
      * @summary Get latest artifact
      * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
      * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
-     * @param {boolean} [dereference] Allows the user to specify if the content should be dereferenced when being returned
+     * @param {HandleReferencesType} [references] Allows the user to specify how references in the content should be treated.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ArtifactsApi
      */
-    public getLatestArtifact(groupId: string, artifactId: string, dereference?: boolean, options?: AxiosRequestConfig) {
-        return ArtifactsApiFp(this.configuration).getLatestArtifact(groupId, artifactId, dereference, options).then((request) => request(this.axios, this.basePath));
+    public getLatestArtifact(groupId: string, artifactId: string, references?: HandleReferencesType, options?: AxiosRequestConfig) {
+        return ArtifactsApiFp(this.configuration).getLatestArtifact(groupId, artifactId, references, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4764,12 +4520,13 @@ export class ArtifactsApi extends BaseAPI {
      * Returns a list containing all the artifact references using the artifact global ID.  This operation may fail for one of the following reasons:  * A server error occurred (HTTP error `500`)
      * @summary List artifact references by global ID
      * @param {number} globalId Global identifier for an artifact version.
+     * @param {ReferenceType} [refType] Determines the type of reference to return, either INBOUND or OUTBOUND.  Defaults to OUTBOUND.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ArtifactsApi
      */
-    public referencesByGlobalId(globalId: number, options?: AxiosRequestConfig) {
-        return ArtifactsApiFp(this.configuration).referencesByGlobalId(globalId, options).then((request) => request(this.axios, this.basePath));
+    public referencesByGlobalId(globalId: number, refType?: ReferenceType, options?: AxiosRequestConfig) {
+        return ArtifactsApiFp(this.configuration).referencesByGlobalId(globalId, refType, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4802,13 +4559,13 @@ export class ArtifactsApi extends BaseAPI {
      * @param {string} [artifactType] Indicates the type of artifact represented by the content being used for the search.  This is only needed when using the &#x60;canonical&#x60; query parameter, so that the server knows how to canonicalize the content prior to searching for matching artifacts.
      * @param {number} [offset] The number of artifacts to skip before starting to collect the result set.  Defaults to 0.
      * @param {number} [limit] The number of artifacts to return.  Defaults to 20.
-     * @param {'asc' | 'desc'} [order] Sort order, ascending (&#x60;asc&#x60;) or descending (&#x60;desc&#x60;).
-     * @param {'name' | 'createdOn'} [orderby] The field to sort by.  Can be one of:  * &#x60;name&#x60; * &#x60;createdOn&#x60; 
+     * @param {SearchArtifactsByContentOrderEnum} [order] Sort order, ascending (&#x60;asc&#x60;) or descending (&#x60;desc&#x60;).
+     * @param {SearchArtifactsByContentOrderbyEnum} [orderby] The field to sort by.  Can be one of:  * &#x60;name&#x60; * &#x60;createdOn&#x60; 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ArtifactsApi
      */
-    public searchArtifactsByContent(body: File, canonical?: boolean, artifactType?: string, offset?: number, limit?: number, order?: 'asc' | 'desc', orderby?: 'name' | 'createdOn', options?: AxiosRequestConfig) {
+    public searchArtifactsByContent(body: File, canonical?: boolean, artifactType?: string, offset?: number, limit?: number, order?: SearchArtifactsByContentOrderEnum, orderby?: SearchArtifactsByContentOrderbyEnum, options?: AxiosRequestConfig) {
         return ArtifactsApiFp(this.configuration).searchArtifactsByContent(body, canonical, artifactType, offset, limit, order, orderby, options).then((request) => request(this.axios, this.basePath));
     }
 
@@ -4845,6 +4602,31 @@ export class ArtifactsApi extends BaseAPI {
         return ArtifactsApiFp(this.configuration).updateArtifactState(groupId, artifactId, updateState, options).then((request) => request(this.axios, this.basePath));
     }
 }
+
+/**
+ * @export
+ */
+export const CreateArtifactXRegistryHashAlgorithmEnum = {
+    Sha256: 'SHA256',
+    Md5: 'MD5'
+} as const;
+export type CreateArtifactXRegistryHashAlgorithmEnum = typeof CreateArtifactXRegistryHashAlgorithmEnum[keyof typeof CreateArtifactXRegistryHashAlgorithmEnum];
+/**
+ * @export
+ */
+export const SearchArtifactsByContentOrderEnum = {
+    Asc: 'asc',
+    Desc: 'desc'
+} as const;
+export type SearchArtifactsByContentOrderEnum = typeof SearchArtifactsByContentOrderEnum[keyof typeof SearchArtifactsByContentOrderEnum];
+/**
+ * @export
+ */
+export const SearchArtifactsByContentOrderbyEnum = {
+    Name: 'name',
+    CreatedOn: 'createdOn'
+} as const;
+export type SearchArtifactsByContentOrderbyEnum = typeof SearchArtifactsByContentOrderbyEnum[keyof typeof SearchArtifactsByContentOrderbyEnum];
 
 
 /**
@@ -5178,6 +4960,7 @@ export class GroupsApi extends BaseAPI {
         return GroupsApiFp(this.configuration).listGroups(limit, offset, order, orderby, options).then((request) => request(this.axios, this.basePath));
     }
 }
+
 
 
 /**
@@ -5875,6 +5658,7 @@ export class MetadataApi extends BaseAPI {
 }
 
 
+
 /**
  * SystemApi - axios parameter creator
  * @export
@@ -6033,6 +5817,7 @@ export class SystemApi extends BaseAPI {
 }
 
 
+
 /**
  * UsersApi - axios parameter creator
  * @export
@@ -6131,12 +5916,61 @@ export class UsersApi extends BaseAPI {
 }
 
 
+
 /**
  * VersionsApi - axios parameter creator
  * @export
  */
 export const VersionsApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
+        /**
+         * Adds a new comment to the artifact version.  Both the `artifactId` and the unique `version` number must be provided.  This operation can fail for the following reasons:  * No artifact with this `artifactId` exists (HTTP error `404`) * No version with this `version` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
+         * @summary Add new comment
+         * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
+         * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
+         * @param {string} version The unique identifier of a specific version of the artifact content.
+         * @param {NewComment} newComment 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        addArtifactVersionComment: async (groupId: string, artifactId: string, version: string, newComment: NewComment, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'groupId' is not null or undefined
+            assertParamExists('addArtifactVersionComment', 'groupId', groupId)
+            // verify required parameter 'artifactId' is not null or undefined
+            assertParamExists('addArtifactVersionComment', 'artifactId', artifactId)
+            // verify required parameter 'version' is not null or undefined
+            assertParamExists('addArtifactVersionComment', 'version', version)
+            // verify required parameter 'newComment' is not null or undefined
+            assertParamExists('addArtifactVersionComment', 'newComment', newComment)
+            const localVarPath = `/groups/{groupId}/artifacts/{artifactId}/versions/{version}/comments`
+                .replace(`{${"groupId"}}`, encodeURIComponent(String(groupId)))
+                .replace(`{${"artifactId"}}`, encodeURIComponent(String(artifactId)))
+                .replace(`{${"version"}}`, encodeURIComponent(String(version)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(newComment, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
         /**
          * Creates a new version of the artifact by uploading new content.  The configured rules for the artifact are applied, and if they all pass, the new content is added as the most recent  version of the artifact.  If any of the rules fail, an error is returned.  The body of the request can be the raw content of the new artifact version, or the raw content  and a set of references pointing to other artifacts, and the type of that content should match the artifact\'s type (for example if the artifact type is `AVRO` then the content of the request should be an Apache Avro document).  This operation can fail for the following reasons:  * Provided content (request body) was empty (HTTP error `400`) * No artifact with this `artifactId` exists (HTTP error `404`) * The new content violates one of the rules configured for the artifact (HTTP error `409`) * A server error occurred (HTTP error `500`) 
          * @summary Create artifact version
@@ -6249,16 +6083,62 @@ export const VersionsApiAxiosParamCreator = function (configuration?: Configurat
             };
         },
         /**
+         * Deletes a single comment in an artifact version.  Only the owner of the comment can delete it.  The `artifactId`, unique `version` number, and `commentId`  must be provided.  This operation can fail for the following reasons:  * No artifact with this `artifactId` exists (HTTP error `404`) * No version with this `version` exists (HTTP error `404`) * No comment with this `commentId` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
+         * @summary Delete a single comment
+         * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
+         * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
+         * @param {string} version The unique identifier of a specific version of the artifact content.
+         * @param {string} commentId The unique identifier of a single comment.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deleteArtifactVersionComment: async (groupId: string, artifactId: string, version: string, commentId: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'groupId' is not null or undefined
+            assertParamExists('deleteArtifactVersionComment', 'groupId', groupId)
+            // verify required parameter 'artifactId' is not null or undefined
+            assertParamExists('deleteArtifactVersionComment', 'artifactId', artifactId)
+            // verify required parameter 'version' is not null or undefined
+            assertParamExists('deleteArtifactVersionComment', 'version', version)
+            // verify required parameter 'commentId' is not null or undefined
+            assertParamExists('deleteArtifactVersionComment', 'commentId', commentId)
+            const localVarPath = `/groups/{groupId}/artifacts/{artifactId}/versions/{version}/comments/{commentId}`
+                .replace(`{${"groupId"}}`, encodeURIComponent(String(groupId)))
+                .replace(`{${"artifactId"}}`, encodeURIComponent(String(artifactId)))
+                .replace(`{${"version"}}`, encodeURIComponent(String(version)))
+                .replace(`{${"commentId"}}`, encodeURIComponent(String(commentId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * Retrieves a single version of the artifact content.  Both the `artifactId` and the unique `version` number must be provided.  The `Content-Type` of the response depends  on the artifact type.  In most cases, this is `application/json`, but for some types  it may be different (for example, `PROTOBUF`).  This operation can fail for the following reasons:  * No artifact with this `artifactId` exists (HTTP error `404`) * No version with this `version` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
          * @summary Get artifact version
          * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
          * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
          * @param {string} version The unique identifier of a specific version of the artifact content.
-         * @param {boolean} [dereference] Allows the user to specify if the content should be dereferenced when being returned
+         * @param {HandleReferencesType} [references] Allows the user to specify how references in the content should be treated.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getArtifactVersion: async (groupId: string, artifactId: string, version: string, dereference?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getArtifactVersion: async (groupId: string, artifactId: string, version: string, references?: HandleReferencesType, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'groupId' is not null or undefined
             assertParamExists('getArtifactVersion', 'groupId', groupId)
             // verify required parameter 'artifactId' is not null or undefined
@@ -6280,8 +6160,8 @@ export const VersionsApiAxiosParamCreator = function (configuration?: Configurat
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
-            if (dereference !== undefined) {
-                localVarQueryParameter['dereference'] = dereference;
+            if (references !== undefined) {
+                localVarQueryParameter['references'] = references;
             }
 
 
@@ -6296,15 +6176,58 @@ export const VersionsApiAxiosParamCreator = function (configuration?: Configurat
             };
         },
         /**
-         * Retrieves a single version of the artifact content.  Both the `artifactId` and the unique `version` number must be provided.  The `Content-Type` of the response depends  on the artifact type.  In most cases, this is `application/json`, but for some types  it may be different (for example, `PROTOBUF`).  This operation can fail for the following reasons:  * No artifact with this `artifactId` exists (HTTP error `404`) * No version with this `version` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
-         * @summary Get artifact version
+         * Retrieves all comments for a version of an artifact.  Both the `artifactId` and the unique `version` number must be provided.  This operation can fail for the following reasons:  * No artifact with this `artifactId` exists (HTTP error `404`) * No version with this `version` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
+         * @summary Get artifact version comments
          * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
          * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
          * @param {string} version The unique identifier of a specific version of the artifact content.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getArtifactVersionReferences: async (groupId: string, artifactId: string, version: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getArtifactVersionComments: async (groupId: string, artifactId: string, version: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'groupId' is not null or undefined
+            assertParamExists('getArtifactVersionComments', 'groupId', groupId)
+            // verify required parameter 'artifactId' is not null or undefined
+            assertParamExists('getArtifactVersionComments', 'artifactId', artifactId)
+            // verify required parameter 'version' is not null or undefined
+            assertParamExists('getArtifactVersionComments', 'version', version)
+            const localVarPath = `/groups/{groupId}/artifacts/{artifactId}/versions/{version}/comments`
+                .replace(`{${"groupId"}}`, encodeURIComponent(String(groupId)))
+                .replace(`{${"artifactId"}}`, encodeURIComponent(String(artifactId)))
+                .replace(`{${"version"}}`, encodeURIComponent(String(version)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Retrieves all references for a single version of an artifact.  Both the `artifactId` and the unique `version` number must be provided.  Using the `refType` query parameter, it is possible to retrieve an array of either the inbound or outbound references.  This operation can fail for the following reasons:  * No artifact with this `artifactId` exists (HTTP error `404`) * No version with this `version` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
+         * @summary Get artifact version references
+         * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
+         * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
+         * @param {string} version The unique identifier of a specific version of the artifact content.
+         * @param {ReferenceType} [refType] Determines the type of reference to return, either INBOUND or OUTBOUND.  Defaults to OUTBOUND.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getArtifactVersionReferences: async (groupId: string, artifactId: string, version: string, refType?: ReferenceType, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'groupId' is not null or undefined
             assertParamExists('getArtifactVersionReferences', 'groupId', groupId)
             // verify required parameter 'artifactId' is not null or undefined
@@ -6325,6 +6248,10 @@ export const VersionsApiAxiosParamCreator = function (configuration?: Configurat
             const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+
+            if (refType !== undefined) {
+                localVarQueryParameter['refType'] = refType;
+            }
 
 
     
@@ -6379,6 +6306,58 @@ export const VersionsApiAxiosParamCreator = function (configuration?: Configurat
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Updates the value of a single comment in an artifact version.  Only the owner of the comment can modify it.  The `artifactId`, unique `version` number, and `commentId`  must be provided.  This operation can fail for the following reasons:  * No artifact with this `artifactId` exists (HTTP error `404`) * No version with this `version` exists (HTTP error `404`) * No comment with this `commentId` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
+         * @summary Update a comment
+         * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
+         * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
+         * @param {string} version The unique identifier of a specific version of the artifact content.
+         * @param {string} commentId The unique identifier of a single comment.
+         * @param {NewComment} newComment 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        updateArtifactVersionComment: async (groupId: string, artifactId: string, version: string, commentId: string, newComment: NewComment, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'groupId' is not null or undefined
+            assertParamExists('updateArtifactVersionComment', 'groupId', groupId)
+            // verify required parameter 'artifactId' is not null or undefined
+            assertParamExists('updateArtifactVersionComment', 'artifactId', artifactId)
+            // verify required parameter 'version' is not null or undefined
+            assertParamExists('updateArtifactVersionComment', 'version', version)
+            // verify required parameter 'commentId' is not null or undefined
+            assertParamExists('updateArtifactVersionComment', 'commentId', commentId)
+            // verify required parameter 'newComment' is not null or undefined
+            assertParamExists('updateArtifactVersionComment', 'newComment', newComment)
+            const localVarPath = `/groups/{groupId}/artifacts/{artifactId}/versions/{version}/comments/{commentId}`
+                .replace(`{${"groupId"}}`, encodeURIComponent(String(groupId)))
+                .replace(`{${"artifactId"}}`, encodeURIComponent(String(artifactId)))
+                .replace(`{${"version"}}`, encodeURIComponent(String(version)))
+                .replace(`{${"commentId"}}`, encodeURIComponent(String(commentId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(newComment, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -6444,6 +6423,20 @@ export const VersionsApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = VersionsApiAxiosParamCreator(configuration)
     return {
         /**
+         * Adds a new comment to the artifact version.  Both the `artifactId` and the unique `version` number must be provided.  This operation can fail for the following reasons:  * No artifact with this `artifactId` exists (HTTP error `404`) * No version with this `version` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
+         * @summary Add new comment
+         * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
+         * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
+         * @param {string} version The unique identifier of a specific version of the artifact content.
+         * @param {NewComment} newComment 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async addArtifactVersionComment(groupId: string, artifactId: string, version: string, newComment: NewComment, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Comment>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.addArtifactVersionComment(groupId, artifactId, version, newComment, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
          * Creates a new version of the artifact by uploading new content.  The configured rules for the artifact are applied, and if they all pass, the new content is added as the most recent  version of the artifact.  If any of the rules fail, an error is returned.  The body of the request can be the raw content of the new artifact version, or the raw content  and a set of references pointing to other artifacts, and the type of that content should match the artifact\'s type (for example if the artifact type is `AVRO` then the content of the request should be an Apache Avro document).  This operation can fail for the following reasons:  * Provided content (request body) was empty (HTTP error `400`) * No artifact with this `artifactId` exists (HTTP error `404`) * The new content violates one of the rules configured for the artifact (HTTP error `409`) * A server error occurred (HTTP error `500`) 
          * @summary Create artifact version
          * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
@@ -6475,17 +6468,17 @@ export const VersionsApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         * Retrieves a single version of the artifact content.  Both the `artifactId` and the unique `version` number must be provided.  The `Content-Type` of the response depends  on the artifact type.  In most cases, this is `application/json`, but for some types  it may be different (for example, `PROTOBUF`).  This operation can fail for the following reasons:  * No artifact with this `artifactId` exists (HTTP error `404`) * No version with this `version` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
-         * @summary Get artifact version
+         * Deletes a single comment in an artifact version.  Only the owner of the comment can delete it.  The `artifactId`, unique `version` number, and `commentId`  must be provided.  This operation can fail for the following reasons:  * No artifact with this `artifactId` exists (HTTP error `404`) * No version with this `version` exists (HTTP error `404`) * No comment with this `commentId` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
+         * @summary Delete a single comment
          * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
          * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
          * @param {string} version The unique identifier of a specific version of the artifact content.
-         * @param {boolean} [dereference] Allows the user to specify if the content should be dereferenced when being returned
+         * @param {string} commentId The unique identifier of a single comment.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getArtifactVersion(groupId: string, artifactId: string, version: string, dereference?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<File>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getArtifactVersion(groupId, artifactId, version, dereference, options);
+        async deleteArtifactVersionComment(groupId: string, artifactId: string, version: string, commentId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteArtifactVersionComment(groupId, artifactId, version, commentId, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -6494,11 +6487,39 @@ export const VersionsApiFp = function(configuration?: Configuration) {
          * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
          * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
          * @param {string} version The unique identifier of a specific version of the artifact content.
+         * @param {HandleReferencesType} [references] Allows the user to specify how references in the content should be treated.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getArtifactVersionReferences(groupId: string, artifactId: string, version: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ArtifactReference>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getArtifactVersionReferences(groupId, artifactId, version, options);
+        async getArtifactVersion(groupId: string, artifactId: string, version: string, references?: HandleReferencesType, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<File>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getArtifactVersion(groupId, artifactId, version, references, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * Retrieves all comments for a version of an artifact.  Both the `artifactId` and the unique `version` number must be provided.  This operation can fail for the following reasons:  * No artifact with this `artifactId` exists (HTTP error `404`) * No version with this `version` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
+         * @summary Get artifact version comments
+         * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
+         * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
+         * @param {string} version The unique identifier of a specific version of the artifact content.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getArtifactVersionComments(groupId: string, artifactId: string, version: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Comment>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getArtifactVersionComments(groupId, artifactId, version, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * Retrieves all references for a single version of an artifact.  Both the `artifactId` and the unique `version` number must be provided.  Using the `refType` query parameter, it is possible to retrieve an array of either the inbound or outbound references.  This operation can fail for the following reasons:  * No artifact with this `artifactId` exists (HTTP error `404`) * No version with this `version` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
+         * @summary Get artifact version references
+         * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
+         * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
+         * @param {string} version The unique identifier of a specific version of the artifact content.
+         * @param {ReferenceType} [refType] Determines the type of reference to return, either INBOUND or OUTBOUND.  Defaults to OUTBOUND.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getArtifactVersionReferences(groupId: string, artifactId: string, version: string, refType?: ReferenceType, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ArtifactReference>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getArtifactVersionReferences(groupId, artifactId, version, refType, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -6513,6 +6534,21 @@ export const VersionsApiFp = function(configuration?: Configuration) {
          */
         async listArtifactVersions(groupId: string, artifactId: string, offset?: number, limit?: number, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<VersionSearchResults>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.listArtifactVersions(groupId, artifactId, offset, limit, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * Updates the value of a single comment in an artifact version.  Only the owner of the comment can modify it.  The `artifactId`, unique `version` number, and `commentId`  must be provided.  This operation can fail for the following reasons:  * No artifact with this `artifactId` exists (HTTP error `404`) * No version with this `version` exists (HTTP error `404`) * No comment with this `commentId` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
+         * @summary Update a comment
+         * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
+         * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
+         * @param {string} version The unique identifier of a specific version of the artifact content.
+         * @param {string} commentId The unique identifier of a single comment.
+         * @param {NewComment} newComment 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async updateArtifactVersionComment(groupId: string, artifactId: string, version: string, commentId: string, newComment: NewComment, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.updateArtifactVersionComment(groupId, artifactId, version, commentId, newComment, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -6539,6 +6575,19 @@ export const VersionsApiFp = function(configuration?: Configuration) {
 export const VersionsApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
     const localVarFp = VersionsApiFp(configuration)
     return {
+        /**
+         * Adds a new comment to the artifact version.  Both the `artifactId` and the unique `version` number must be provided.  This operation can fail for the following reasons:  * No artifact with this `artifactId` exists (HTTP error `404`) * No version with this `version` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
+         * @summary Add new comment
+         * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
+         * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
+         * @param {string} version The unique identifier of a specific version of the artifact content.
+         * @param {NewComment} newComment 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        addArtifactVersionComment(groupId: string, artifactId: string, version: string, newComment: NewComment, options?: any): AxiosPromise<Comment> {
+            return localVarFp.addArtifactVersionComment(groupId, artifactId, version, newComment, options).then((request) => request(axios, basePath));
+        },
         /**
          * Creates a new version of the artifact by uploading new content.  The configured rules for the artifact are applied, and if they all pass, the new content is added as the most recent  version of the artifact.  If any of the rules fail, an error is returned.  The body of the request can be the raw content of the new artifact version, or the raw content  and a set of references pointing to other artifacts, and the type of that content should match the artifact\'s type (for example if the artifact type is `AVRO` then the content of the request should be an Apache Avro document).  This operation can fail for the following reasons:  * Provided content (request body) was empty (HTTP error `400`) * No artifact with this `artifactId` exists (HTTP error `404`) * The new content violates one of the rules configured for the artifact (HTTP error `409`) * A server error occurred (HTTP error `500`) 
          * @summary Create artifact version
@@ -6569,17 +6618,17 @@ export const VersionsApiFactory = function (configuration?: Configuration, baseP
             return localVarFp.deleteArtifactVersion(groupId, artifactId, version, options).then((request) => request(axios, basePath));
         },
         /**
-         * Retrieves a single version of the artifact content.  Both the `artifactId` and the unique `version` number must be provided.  The `Content-Type` of the response depends  on the artifact type.  In most cases, this is `application/json`, but for some types  it may be different (for example, `PROTOBUF`).  This operation can fail for the following reasons:  * No artifact with this `artifactId` exists (HTTP error `404`) * No version with this `version` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
-         * @summary Get artifact version
+         * Deletes a single comment in an artifact version.  Only the owner of the comment can delete it.  The `artifactId`, unique `version` number, and `commentId`  must be provided.  This operation can fail for the following reasons:  * No artifact with this `artifactId` exists (HTTP error `404`) * No version with this `version` exists (HTTP error `404`) * No comment with this `commentId` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
+         * @summary Delete a single comment
          * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
          * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
          * @param {string} version The unique identifier of a specific version of the artifact content.
-         * @param {boolean} [dereference] Allows the user to specify if the content should be dereferenced when being returned
+         * @param {string} commentId The unique identifier of a single comment.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getArtifactVersion(groupId: string, artifactId: string, version: string, dereference?: boolean, options?: any): AxiosPromise<File> {
-            return localVarFp.getArtifactVersion(groupId, artifactId, version, dereference, options).then((request) => request(axios, basePath));
+        deleteArtifactVersionComment(groupId: string, artifactId: string, version: string, commentId: string, options?: any): AxiosPromise<void> {
+            return localVarFp.deleteArtifactVersionComment(groupId, artifactId, version, commentId, options).then((request) => request(axios, basePath));
         },
         /**
          * Retrieves a single version of the artifact content.  Both the `artifactId` and the unique `version` number must be provided.  The `Content-Type` of the response depends  on the artifact type.  In most cases, this is `application/json`, but for some types  it may be different (for example, `PROTOBUF`).  This operation can fail for the following reasons:  * No artifact with this `artifactId` exists (HTTP error `404`) * No version with this `version` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
@@ -6587,11 +6636,37 @@ export const VersionsApiFactory = function (configuration?: Configuration, baseP
          * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
          * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
          * @param {string} version The unique identifier of a specific version of the artifact content.
+         * @param {HandleReferencesType} [references] Allows the user to specify how references in the content should be treated.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getArtifactVersionReferences(groupId: string, artifactId: string, version: string, options?: any): AxiosPromise<Array<ArtifactReference>> {
-            return localVarFp.getArtifactVersionReferences(groupId, artifactId, version, options).then((request) => request(axios, basePath));
+        getArtifactVersion(groupId: string, artifactId: string, version: string, references?: HandleReferencesType, options?: any): AxiosPromise<File> {
+            return localVarFp.getArtifactVersion(groupId, artifactId, version, references, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Retrieves all comments for a version of an artifact.  Both the `artifactId` and the unique `version` number must be provided.  This operation can fail for the following reasons:  * No artifact with this `artifactId` exists (HTTP error `404`) * No version with this `version` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
+         * @summary Get artifact version comments
+         * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
+         * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
+         * @param {string} version The unique identifier of a specific version of the artifact content.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getArtifactVersionComments(groupId: string, artifactId: string, version: string, options?: any): AxiosPromise<Array<Comment>> {
+            return localVarFp.getArtifactVersionComments(groupId, artifactId, version, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Retrieves all references for a single version of an artifact.  Both the `artifactId` and the unique `version` number must be provided.  Using the `refType` query parameter, it is possible to retrieve an array of either the inbound or outbound references.  This operation can fail for the following reasons:  * No artifact with this `artifactId` exists (HTTP error `404`) * No version with this `version` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
+         * @summary Get artifact version references
+         * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
+         * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
+         * @param {string} version The unique identifier of a specific version of the artifact content.
+         * @param {ReferenceType} [refType] Determines the type of reference to return, either INBOUND or OUTBOUND.  Defaults to OUTBOUND.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getArtifactVersionReferences(groupId: string, artifactId: string, version: string, refType?: ReferenceType, options?: any): AxiosPromise<Array<ArtifactReference>> {
+            return localVarFp.getArtifactVersionReferences(groupId, artifactId, version, refType, options).then((request) => request(axios, basePath));
         },
         /**
          * Returns a list of all versions of the artifact.  The result set is paged.  This operation can fail for the following reasons:  * No artifact with this `artifactId` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
@@ -6605,6 +6680,20 @@ export const VersionsApiFactory = function (configuration?: Configuration, baseP
          */
         listArtifactVersions(groupId: string, artifactId: string, offset?: number, limit?: number, options?: any): AxiosPromise<VersionSearchResults> {
             return localVarFp.listArtifactVersions(groupId, artifactId, offset, limit, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Updates the value of a single comment in an artifact version.  Only the owner of the comment can modify it.  The `artifactId`, unique `version` number, and `commentId`  must be provided.  This operation can fail for the following reasons:  * No artifact with this `artifactId` exists (HTTP error `404`) * No version with this `version` exists (HTTP error `404`) * No comment with this `commentId` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
+         * @summary Update a comment
+         * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
+         * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
+         * @param {string} version The unique identifier of a specific version of the artifact content.
+         * @param {string} commentId The unique identifier of a single comment.
+         * @param {NewComment} newComment 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        updateArtifactVersionComment(groupId: string, artifactId: string, version: string, commentId: string, newComment: NewComment, options?: any): AxiosPromise<void> {
+            return localVarFp.updateArtifactVersionComment(groupId, artifactId, version, commentId, newComment, options).then((request) => request(axios, basePath));
         },
         /**
          * Updates the state of a specific version of an artifact.  For example, you can use  this operation to disable a specific version.  This operation can fail for the following reasons:  * No artifact with this `artifactId` exists (HTTP error `404`) * No version with this `version` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
@@ -6629,6 +6718,21 @@ export const VersionsApiFactory = function (configuration?: Configuration, baseP
  * @extends {BaseAPI}
  */
 export class VersionsApi extends BaseAPI {
+    /**
+     * Adds a new comment to the artifact version.  Both the `artifactId` and the unique `version` number must be provided.  This operation can fail for the following reasons:  * No artifact with this `artifactId` exists (HTTP error `404`) * No version with this `version` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
+     * @summary Add new comment
+     * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
+     * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
+     * @param {string} version The unique identifier of a specific version of the artifact content.
+     * @param {NewComment} newComment 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof VersionsApi
+     */
+    public addArtifactVersionComment(groupId: string, artifactId: string, version: string, newComment: NewComment, options?: AxiosRequestConfig) {
+        return VersionsApiFp(this.configuration).addArtifactVersionComment(groupId, artifactId, version, newComment, options).then((request) => request(this.axios, this.basePath));
+    }
+
     /**
      * Creates a new version of the artifact by uploading new content.  The configured rules for the artifact are applied, and if they all pass, the new content is added as the most recent  version of the artifact.  If any of the rules fail, an error is returned.  The body of the request can be the raw content of the new artifact version, or the raw content  and a set of references pointing to other artifacts, and the type of that content should match the artifact\'s type (for example if the artifact type is `AVRO` then the content of the request should be an Apache Avro document).  This operation can fail for the following reasons:  * Provided content (request body) was empty (HTTP error `400`) * No artifact with this `artifactId` exists (HTTP error `404`) * The new content violates one of the rules configured for the artifact (HTTP error `409`) * A server error occurred (HTTP error `500`) 
      * @summary Create artifact version
@@ -6663,18 +6767,18 @@ export class VersionsApi extends BaseAPI {
     }
 
     /**
-     * Retrieves a single version of the artifact content.  Both the `artifactId` and the unique `version` number must be provided.  The `Content-Type` of the response depends  on the artifact type.  In most cases, this is `application/json`, but for some types  it may be different (for example, `PROTOBUF`).  This operation can fail for the following reasons:  * No artifact with this `artifactId` exists (HTTP error `404`) * No version with this `version` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
-     * @summary Get artifact version
+     * Deletes a single comment in an artifact version.  Only the owner of the comment can delete it.  The `artifactId`, unique `version` number, and `commentId`  must be provided.  This operation can fail for the following reasons:  * No artifact with this `artifactId` exists (HTTP error `404`) * No version with this `version` exists (HTTP error `404`) * No comment with this `commentId` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
+     * @summary Delete a single comment
      * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
      * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
      * @param {string} version The unique identifier of a specific version of the artifact content.
-     * @param {boolean} [dereference] Allows the user to specify if the content should be dereferenced when being returned
+     * @param {string} commentId The unique identifier of a single comment.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof VersionsApi
      */
-    public getArtifactVersion(groupId: string, artifactId: string, version: string, dereference?: boolean, options?: AxiosRequestConfig) {
-        return VersionsApiFp(this.configuration).getArtifactVersion(groupId, artifactId, version, dereference, options).then((request) => request(this.axios, this.basePath));
+    public deleteArtifactVersionComment(groupId: string, artifactId: string, version: string, commentId: string, options?: AxiosRequestConfig) {
+        return VersionsApiFp(this.configuration).deleteArtifactVersionComment(groupId, artifactId, version, commentId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -6683,12 +6787,42 @@ export class VersionsApi extends BaseAPI {
      * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
      * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
      * @param {string} version The unique identifier of a specific version of the artifact content.
+     * @param {HandleReferencesType} [references] Allows the user to specify how references in the content should be treated.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof VersionsApi
      */
-    public getArtifactVersionReferences(groupId: string, artifactId: string, version: string, options?: AxiosRequestConfig) {
-        return VersionsApiFp(this.configuration).getArtifactVersionReferences(groupId, artifactId, version, options).then((request) => request(this.axios, this.basePath));
+    public getArtifactVersion(groupId: string, artifactId: string, version: string, references?: HandleReferencesType, options?: AxiosRequestConfig) {
+        return VersionsApiFp(this.configuration).getArtifactVersion(groupId, artifactId, version, references, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Retrieves all comments for a version of an artifact.  Both the `artifactId` and the unique `version` number must be provided.  This operation can fail for the following reasons:  * No artifact with this `artifactId` exists (HTTP error `404`) * No version with this `version` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
+     * @summary Get artifact version comments
+     * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
+     * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
+     * @param {string} version The unique identifier of a specific version of the artifact content.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof VersionsApi
+     */
+    public getArtifactVersionComments(groupId: string, artifactId: string, version: string, options?: AxiosRequestConfig) {
+        return VersionsApiFp(this.configuration).getArtifactVersionComments(groupId, artifactId, version, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Retrieves all references for a single version of an artifact.  Both the `artifactId` and the unique `version` number must be provided.  Using the `refType` query parameter, it is possible to retrieve an array of either the inbound or outbound references.  This operation can fail for the following reasons:  * No artifact with this `artifactId` exists (HTTP error `404`) * No version with this `version` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
+     * @summary Get artifact version references
+     * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
+     * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
+     * @param {string} version The unique identifier of a specific version of the artifact content.
+     * @param {ReferenceType} [refType] Determines the type of reference to return, either INBOUND or OUTBOUND.  Defaults to OUTBOUND.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof VersionsApi
+     */
+    public getArtifactVersionReferences(groupId: string, artifactId: string, version: string, refType?: ReferenceType, options?: AxiosRequestConfig) {
+        return VersionsApiFp(this.configuration).getArtifactVersionReferences(groupId, artifactId, version, refType, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -6707,6 +6841,22 @@ export class VersionsApi extends BaseAPI {
     }
 
     /**
+     * Updates the value of a single comment in an artifact version.  Only the owner of the comment can modify it.  The `artifactId`, unique `version` number, and `commentId`  must be provided.  This operation can fail for the following reasons:  * No artifact with this `artifactId` exists (HTTP error `404`) * No version with this `version` exists (HTTP error `404`) * No comment with this `commentId` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
+     * @summary Update a comment
+     * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
+     * @param {string} artifactId The artifact ID.  Can be a string (client-provided) or UUID (server-generated), representing the unique artifact identifier.
+     * @param {string} version The unique identifier of a specific version of the artifact content.
+     * @param {string} commentId The unique identifier of a single comment.
+     * @param {NewComment} newComment 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof VersionsApi
+     */
+    public updateArtifactVersionComment(groupId: string, artifactId: string, version: string, commentId: string, newComment: NewComment, options?: AxiosRequestConfig) {
+        return VersionsApiFp(this.configuration).updateArtifactVersionComment(groupId, artifactId, version, commentId, newComment, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
      * Updates the state of a specific version of an artifact.  For example, you can use  this operation to disable a specific version.  This operation can fail for the following reasons:  * No artifact with this `artifactId` exists (HTTP error `404`) * No version with this `version` exists (HTTP error `404`) * A server error occurred (HTTP error `500`) 
      * @summary Update artifact version state
      * @param {string} groupId The artifact group ID.  Must be a string provided by the client, representing the name of the grouping of artifacts.
@@ -6721,5 +6871,6 @@ export class VersionsApi extends BaseAPI {
         return VersionsApiFp(this.configuration).updateArtifactVersionState(groupId, artifactId, version, updateState, options).then((request) => request(this.axios, this.basePath));
     }
 }
+
 
 
